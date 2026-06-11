@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SGP · Thumbnail Template (A · Lower amber band)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/html-to-image@1.11.13/dist/html-to-image.js"></script>
+<style>
+  :root{
+    --cream:#faf6ee; --amber:#d98e3a; --amber-deep:#c47d2c; --ink:#2b2620; --ink-soft:#3a342c;
+    --line:#e4dfd3; --muted:#8a8478;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ font-family:'Inter Tight',sans-serif; background:#efece4; color:var(--ink);
+    -webkit-font-smoothing:antialiased; }
+
+  /* ---------------- app chrome ---------------- */
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:20px;
+    padding:18px 30px; border-bottom:1px solid var(--line); background:var(--cream); position:sticky; top:0; z-index:20; }
+  .brand{ display:flex; align-items:center; gap:13px; }
+  .brand svg{ display:block; }
+  .brand b{ font-weight:800; letter-spacing:.06em; font-size:18px; }
+  .brand .pill{ font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--amber-deep); border:1px solid var(--amber); border-radius:999px; padding:3px 10px; }
+  .top .hint{ font-size:12.5px; color:var(--muted); }
+
+  .wrap{ max-width:1240px; margin:0 auto; padding:34px 30px 80px; }
+  .grid2{ display:grid; grid-template-columns:minmax(0,1fr) 312px; gap:34px; align-items:start; }
+  .grid2 > div, .grid2 > aside{ min-width:0; }
+  @media (max-width:980px){ .grid2{ grid-template-columns:1fr; } }
+
+  .label{ font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+    display:flex; align-items:center; gap:10px; margin:0 0 14px; }
+  .label::after{ content:""; flex:1; height:1px; background:var(--line); }
+
+  /* live stage */
+  .stage{ position:relative; width:100%; border-radius:8px; overflow:hidden;
+    box-shadow:0 18px 50px -18px rgba(43,38,32,.45); background:var(--ink); }
+  .stage__scaler{ transform-origin:top left; }
+  .editnote{ margin-top:12px; font-size:12.5px; color:var(--muted); line-height:1.5; }
+  .editnote b{ color:var(--ink); font-weight:700; }
+
+  /* ---------------- the thumbnail (true 1280×720) ---------------- */
+  .thumb{ width:1280px; height:720px; position:relative; overflow:hidden;
+    background:var(--ink); font-family:'Inter Tight',sans-serif; }
+  .thumb .hero{ position:absolute; inset:0; overflow:hidden; cursor:pointer; }
+  .thumb .hero img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .hero.empty{ background:repeating-linear-gradient(135deg,#a3aaa6,#a3aaa6 18px,#99a19c 18px,#99a19c 36px); }
+  .hero .ph{ position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
+  .hero .ph .ico{ width:64px; height:64px; border:3px solid rgba(43,38,32,.4); border-radius:10px;
+    display:grid; place-items:center; }
+  .hero .ph .ico::before{ content:""; width:24px; height:24px; border-radius:50%; border:3px solid rgba(43,38,32,.4); }
+  .hero .ph span{ font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:20px; letter-spacing:.05em;
+    text-transform:uppercase; color:rgba(43,38,32,.5); }
+  .hero.dragover{ outline:6px dashed var(--amber); outline-offset:-12px; }
+
+  .scrim-top{ position:absolute; left:0; right:0; top:0; height:230px; pointer-events:none;
+    background:linear-gradient(to bottom, rgba(18,15,12,.46), rgba(18,15,12,0)); }
+
+  .corner{ position:absolute; top:40px; left:48px; z-index:3; display:flex; align-items:center; gap:14px;
+    filter:drop-shadow(0 2px 10px rgba(0,0,0,.5)); }
+  .corner span{ color:var(--cream); font-weight:800; letter-spacing:.16em; font-size:32px; }
+
+  .band{ position:absolute; left:0; right:0; bottom:0; height:176px; background:var(--amber);
+    display:flex; align-items:center; justify-content:space-between; padding:0 56px 0 60px; gap:28px; }
+  .band::before{ content:""; position:absolute; left:0; right:0; top:-6px; height:6px; background:var(--ink); opacity:.18; }
+  .band .title{ flex:1; min-width:0; font-weight:900; line-height:.88; letter-spacing:-.015em; color:var(--ink);
+    text-transform:uppercase; white-space:nowrap; overflow:hidden; }
+  .band .meta{ flex:none; white-space:nowrap; text-align:right; font-weight:700; font-size:23px; letter-spacing:.14em;
+    color:var(--ink); opacity:.82; line-height:1.25; }
+  [contenteditable]{ outline:none; }
+  [contenteditable]:focus{ box-shadow:0 0 0 2px rgba(43,38,32,.35); border-radius:3px; }
+
+  /* ---------------- control panel ---------------- */
+  .panel{ background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:22px 22px 24px;
+    position:sticky; top:84px; }
+  .field{ margin-bottom:18px; }
+  .field > label{ display:block; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:7px; }
+  .field input[type=text]{ width:100%; font-family:inherit; font-size:15px; font-weight:600; color:var(--ink);
+    background:#fff; border:1px solid var(--line); border-radius:7px; padding:10px 12px; }
+  .field input:focus{ outline:none; border-color:var(--amber); box-shadow:0 0 0 3px rgba(217,142,58,.18); }
+
+  .btn{ width:100%; font-family:inherit; font-size:14px; font-weight:700; letter-spacing:.02em; cursor:pointer;
+    border-radius:8px; padding:12px 14px; border:1px solid var(--line); background:#fff; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; gap:9px; transition:transform .06s ease, background .15s; }
+  .btn:hover{ background:#fbf8f1; }
+  .btn:active{ transform:translateY(1px); }
+  .btn.primary{ background:var(--ink); color:var(--cream); border-color:var(--ink); }
+  .btn.primary:hover{ background:#3a332a; }
+  .btn.amber{ background:var(--amber); border-color:var(--amber-deep); color:var(--ink); }
+  .btn.amber:hover{ background:var(--amber-deep); }
+  .btnrow{ display:flex; gap:9px; margin-top:9px; }
+  .btnrow .btn{ width:auto; flex:1; font-size:12.5px; padding:10px; }
+  .sep{ height:1px; background:var(--line); margin:20px 0; }
+  .tip{ font-size:12px; color:var(--muted); line-height:1.5; margin-top:14px; }
+  .tip b{ color:var(--ink); font-weight:700; }
+
+  /* ---------------- series preview ---------------- */
+  .series-wrap{ margin-top:46px; }
+  .series{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  @media (max-width:980px){ .series{ grid-template-columns:repeat(2,1fr); } }
+  .scard{ background:var(--ink); border-radius:6px; overflow:hidden; box-shadow:0 8px 22px -10px rgba(43,38,32,.4); }
+  .scard__scaler{ transform-origin:top left; }
+  .seriesnote{ font-size:12.5px; color:var(--muted); margin:12px 0 0; }
+
+  .hidden{ display:none !important; }
+  .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--ink); color:var(--cream); font-size:13px; font-weight:600; padding:11px 20px; border-radius:999px;
+    transition:all .25s ease; z-index:50; pointer-events:none; }
+  .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <svg viewBox="0 0 100 46" width="42" height="19" aria-hidden="true"><path d="M4 40 Q30 8 50 26 Q70 8 96 40" fill="none" stroke="#2b2620" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <b>STRANGE&nbsp;GOOSE</b>
+    <span class="pill">Thumbnail template · A</span>
+  </div>
+  <div class="hint">Drop a film still · set the title · export 1280×720</div>
+</div>
+
+<div class="wrap">
+  <div class="grid2">
+    <div>
+      <p class="label">Live thumbnail · 1280 × 720</p>
+      <div class="stage" id="stage">
+        <div class="stage__scaler" id="scaler">
+          <div class="thumb" id="thumb">
+            <div class="hero empty" id="hero">
+              <div class="ph"><div class="ico"></div><span>Drop hero still here · 16:9</span></div>
+            </div>
+            <div class="scrim-top"></div>
+            <div class="corner">
+              <svg viewBox="0 0 100 46" width="50" height="23" aria-hidden="true"><path d="M4 40 Q30 8 50 26 Q70 8 96 40" fill="none" stroke="#faf6ee" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>SGP</span>
+            </div>
+            <div class="band">
+              <div class="title" id="titleEl" contenteditable="true" spellcheck="false">THE HAAR</div>
+              <div class="meta" id="metaEl" contenteditable="true" spellcheck="false">STRANGE&nbsp;GOOSE · EDINBURGH</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="editnote"><b>Tip:</b> click the title or the right-hand caption to type directly on the thumbnail, or use the panel. Click the still (or drag an image onto it) to drop in this film's frame.</p>
+    </div>
+
+    <aside class="panel">
+      <div class="field">
+        <label for="titleIn">Film title</label>
+        <input id="titleIn" type="text" value="THE HAAR" />
+      </div>
+      <div class="field">
+        <label for="metaIn">Caption / right line</label>
+        <input id="metaIn" type="text" value="STRANGE GOOSE · EDINBURGH" />
+      </div>
+
+      <button class="btn amber" id="uploadBtn">⬆&nbsp; Upload hero still</button>
+      <div class="btnrow">
+        <button class="btn" id="repBtn">Replace</button>
+        <button class="btn" id="clrBtn">Clear</button>
+      </div>
+      <input id="fileIn" type="file" accept="image/*" class="hidden" />
+
+      <div class="sep"></div>
+
+      <button class="btn primary" id="exportBtn">⬇&nbsp; Export PNG · 1280×720</button>
+      <p class="tip"><b>Per video:</b> swap the still, retype the title, export. The mark, band, type and colour stay locked so every upload matches the grid below.</p>
+    </aside>
+  </div>
+
+  <div class="series-wrap">
+    <p class="label">Channel grid preview · how the series reads</p>
+    <div class="series" id="series"></div>
+    <p class="seriesnote">The first card mirrors your live edit; the rest are samples so you can see the row hold together at search / sidebar size.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const KEY = 'sgp_thumb_A_v1';
+  const titleEl = document.getElementById('titleEl');
+  const metaEl  = document.getElementById('metaEl');
+  const titleIn = document.getElementById('titleIn');
+  const metaIn  = document.getElementById('metaIn');
+  const hero    = document.getElementById('hero');
+  const thumb   = document.getElementById('thumb');
+  const fileIn  = document.getElementById('fileIn');
+
+  let state = { title:'THE HAAR', meta:'STRANGE GOOSE · EDINBURGH', img:null };
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s) state = Object.assign(state, s); }catch(e){}
+
+  /* ---------- title auto-fit within the band ---------- */
+  function fitTitle(el, maxPx, minPx){
+    el.style.whiteSpace = 'nowrap';
+    let size = maxPx;
+    el.style.fontSize = size + 'px';
+    const avail = el.clientWidth;
+    // shrink to fit one line
+    while(el.scrollWidth > avail && size > minPx){ size -= 2; el.style.fontSize = size + 'px'; }
+    // if still overflowing at the floor, allow two lines a touch smaller
+    if(el.scrollWidth > avail){
+      el.style.whiteSpace = 'normal';
+      el.style.lineHeight = '.86';
+      size = Math.min(size, 64);
+      el.style.fontSize = size + 'px';
+    } else {
+      el.style.lineHeight = '.88';
+    }
+  }
+
+  function setHero(url){
+    state.img = url || null;
+    hero.innerHTML = '';
+    if(url){
+      hero.classList.remove('empty');
+      const img = document.createElement('img');
+      img.src = url; img.alt = '';
+      hero.appendChild(img);
+    } else {
+      hero.classList.add('empty');
+      hero.innerHTML = '<div class="ph"><div class="ico"></div><span>Drop hero still here · 16:9</span></div>';
+    }
+  }
+
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  function syncFromState(){
+    titleEl.textContent = state.title;
+    metaEl.innerHTML = state.meta;
+    titleIn.value = state.title;
+    metaIn.value  = state.meta.replace(/&nbsp;/g,' ');
+    setHero(state.img);
+    fitTitle(titleEl, 112, 48);
+    renderSeries();
+  }
+
+  /* ---------- wiring: panel <-> on-canvas ---------- */
+  titleIn.addEventListener('input', ()=>{ state.title = titleIn.value.toUpperCase(); titleEl.textContent = state.title; fitTitle(titleEl,112,48); save(); renderSeries(); });
+  metaIn.addEventListener('input', ()=>{ state.meta = metaIn.value; metaEl.textContent = metaIn.value; save(); });
+
+  titleEl.addEventListener('input', ()=>{ state.title = titleEl.textContent; titleIn.value = titleEl.textContent; fitTitle(titleEl,112,48); save(); renderSeries(); });
+  titleEl.addEventListener('blur', ()=>{ const up = titleEl.textContent.toUpperCase(); if(titleEl.textContent!==up){ titleEl.textContent=up; state.title=up; titleIn.value=up; fitTitle(titleEl,112,48); save(); renderSeries(); } });
+  metaEl.addEventListener('input', ()=>{ state.meta = metaEl.innerHTML; metaIn.value = metaEl.textContent; save(); });
+
+  /* ---------- image upload / drag-drop ---------- */
+  function readFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    const r = new FileReader();
+    r.onload = e => { setHero(e.target.result); save(); toast('Hero still updated'); };
+    r.readAsDataURL(file);
+  }
+  document.getElementById('uploadBtn').onclick = ()=> fileIn.click();
+  document.getElementById('repBtn').onclick = ()=> fileIn.click();
+  hero.addEventListener('click', ()=> fileIn.click());
+  document.getElementById('clrBtn').onclick = ()=>{ setHero(null); save(); toast('Hero cleared'); };
+  fileIn.addEventListener('change', e => readFile(e.target.files[0]));
+
+  ['dragenter','dragover'].forEach(ev => hero.addEventListener(ev, e=>{ e.preventDefault(); hero.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev => hero.addEventListener(ev, e=>{ e.preventDefault(); hero.classList.remove('dragover'); }));
+  hero.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; readFile(f); });
+
+  /* ---------- export ---------- */
+  document.getElementById('exportBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('exportBtn');
+    const old = btn.textContent; btn.textContent = 'Rendering…'; btn.disabled = true;
+    try{
+      await (document.fonts ? document.fonts.ready : Promise.resolve());
+      const dataUrl = await htmlToImage.toPng(thumb, { width:1280, height:720, pixelRatio:1, cacheBust:true });
+      const a = document.createElement('a');
+      const name = (state.title || 'thumbnail').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').toLowerCase();
+      a.download = 'sgp-' + (name||'thumbnail') + '-1280x720.png';
+      a.href = dataUrl; a.click();
+      toast('Exported ' + a.download);
+    }catch(err){ console.error(err); toast('Export failed — see console'); }
+    finally{ btn.textContent = old; btn.disabled = false; }
+  });
+
+  /* ---------- responsive scaling of the live stage ---------- */
+  const stage = document.getElementById('stage');
+  const scaler = document.getElementById('scaler');
+  function fitStage(){
+    const w = stage.clientWidth;
+    const s = w / 1280;
+    scaler.style.transform = 'scale(' + s + ')';
+    stage.style.height = (720 * s) + 'px';
+  }
+  new ResizeObserver(fitStage).observe(stage);
+
+  /* ---------- series preview ---------- */
+  const SAMPLES = [
+    ['SALT LINES','#7f8a86'],
+    ['NORTHERLY','#9a9484'],
+    ['THE QUIET TRADE','#6d6a62'],
+  ];
+  function seriesCardHTML(title, heroHTML){
+    return ''+
+      '<div class="thumb" style="border-radius:0">'+
+        heroHTML+
+        '<div class="scrim-top"></div>'+
+        '<div class="corner"><svg viewBox="0 0 100 46" width="50" height="23"><path d="M4 40 Q30 8 50 26 Q70 8 96 40" fill="none" stroke="#faf6ee" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>SGP</span></div>'+
+        '<div class="band"><div class="title" style="font-size:104px">'+title+'</div>'+
+        '<div class="meta">STRANGE&nbsp;GOOSE · EDINBURGH</div></div>'+
+      '</div>';
+  }
+  function renderSeries(){
+    const host = document.getElementById('series');
+    host.innerHTML = '';
+    const liveHero = state.img
+      ? '<div class="hero"><img src="'+state.img+'" alt=""></div>'
+      : '<div class="hero empty"></div>';
+    const cards = [[ (state.title||'UNTITLED'), liveHero ]];
+    SAMPLES.forEach(([t,c])=>{
+      cards.push([ t, '<div class="hero" style="background:'+c+'"></div>' ]);
+    });
+    cards.forEach(([t, h])=>{
+      const card = document.createElement('div');
+      card.className = 'scard';
+      const inner = document.createElement('div');
+      inner.className = 'scard__scaler';
+      inner.innerHTML = seriesCardHTML(t, h);
+      card.appendChild(inner);
+      host.appendChild(card);
+      // scale 1280 → card width
+      requestAnimationFrame(()=>{
+        const s = card.clientWidth / 1280;
+        inner.style.transform = 'scale(' + s + ')';
+        card.style.height = (720 * s) + 'px';
+        // fit each sample title
+        const tEl = inner.querySelector('.title');
+        let size = 104; tEl.style.whiteSpace='nowrap'; tEl.style.fontSize=size+'px';
+        const avail = tEl.clientWidth;
+        while(tEl.scrollWidth > avail && size > 52){ size-=4; tEl.style.fontSize=size+'px'; }
+      });
+    });
+  }
+
+  // init
+  syncFromState();
+  fitStage();
+  window.addEventListener('resize', ()=>{ fitStage(); fitTitle(titleEl,112,48); });
+  window.addEventListener('load', ()=>{ fitStage(); fitTitle(titleEl,112,48); renderSeries(); });
+
+  /* ---------- toast ---------- */
+  let tT;
+  function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(tT); tT=setTimeout(()=>el.classList.remove('show'),1900); }
+})();
+</script>
+</body>
+</html>

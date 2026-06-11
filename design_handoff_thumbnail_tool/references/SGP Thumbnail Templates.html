@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SGP · YouTube Thumbnail Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --cream:#faf6ee;
+    --amber:#d98e3a;
+    --amber-deep:#c47d2c;
+    --ink:#2b2620;
+    --ink-soft:#3a342c;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ font-family:'Inter Tight',sans-serif; background:#e9e6df; }
+
+  /* ---------- shared thumbnail frame (true 1280×720) ---------- */
+  .thumb{
+    width:1280px; height:720px; position:relative; overflow:hidden;
+    background:var(--ink); font-family:'Inter Tight',sans-serif;
+    user-select:none;
+  }
+  .sgp-scale{ position:relative; overflow:hidden; }
+  .sgp-scale__inner{ position:absolute; top:0; left:0; transform-origin:top left; }
+
+  /* ---------- hero still placeholder ---------- */
+  .sgp-hero{ position:absolute; inset:0; overflow:hidden; }
+  .sgp-hero--warm{ background:repeating-linear-gradient(135deg,#bdae95,#bdae95 16px,#b3a489 16px,#b3a489 32px); }
+  .sgp-hero--cool{ background:repeating-linear-gradient(135deg,#a3aaa6,#a3aaa6 16px,#99a19c 16px,#99a19c 32px); }
+  .sgp-hero--dark{ background:repeating-linear-gradient(135deg,#5c574e,#5c574e 16px,#544f47 16px,#544f47 32px); }
+  .sgp-hero__grain{ position:absolute; inset:0; background:radial-gradient(120% 120% at 50% 30%,rgba(255,255,255,.10),transparent 60%); }
+  .sgp-hero__tag{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:flex; align-items:center; gap:12px; white-space:nowrap;
+    font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:21px;
+    letter-spacing:.06em; color:rgba(43,38,32,.5); text-transform:uppercase;
+  }
+  .sgp-hero--dark .sgp-hero__tag{ color:rgba(250,246,238,.62); }
+  .sgp-hero__dot{ width:11px; height:11px; border-radius:50%; border:2px solid currentColor; }
+
+  /* ---------- wordmark lockups ---------- */
+  .sgp-mark{ line-height:1; }
+  .sgp-mark--row{ display:flex; align-items:center; gap:0.18em; }
+  .sgp-mark--row .sgp-mark__name{ font-size:0.30em; font-weight:800; letter-spacing:.06em; color:var(--mk); }
+  .sgp-mark--stacked{ display:flex; flex-direction:column; align-items:flex-start; gap:0.14em; }
+  .sgp-mark--stacked .sgp-mark__name{ font-size:0.34em; font-weight:800; letter-spacing:.05em; color:var(--mk); }
+  .sgp-mark--stacked .sgp-mark__sub{ font-size:0.135em; font-weight:600; letter-spacing:.22em; color:var(--mk); opacity:.7; }
+  .sgp-goose{ display:block; }
+
+  /* =========================== A — lower amber band =========================== */
+  .dir-a .a-corner{ position:absolute; top:40px; left:48px; z-index:3; display:flex; align-items:center; gap:14px;
+    filter:drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+  .dir-a .a-corner span{ color:var(--cream); font-weight:800; letter-spacing:.16em; font-size:32px; }
+  .a-band{ position:absolute; left:0; right:0; bottom:0; height:176px; background:var(--amber);
+    display:flex; align-items:center; justify-content:space-between; padding:0 56px 0 60px; }
+  .a-band::before{ content:""; position:absolute; left:0; right:0; top:-6px; height:6px; background:var(--ink); opacity:.18; }
+  .a-band__title{ font-weight:900; font-size:104px; line-height:.88; letter-spacing:-.015em; color:var(--ink);
+    text-transform:uppercase; }
+  .a-band__meta{ flex:none; padding-left:32px; text-align:right; font-weight:700; font-size:23px; letter-spacing:.16em;
+    color:var(--ink); opacity:.78; }
+
+  /* =========================== B — left cream sidebar =========================== */
+  .dir-b{ display:flex; }
+  .b-panel{ width:486px; height:100%; background:var(--cream); padding:60px 52px 56px;
+    display:flex; flex-direction:column; justify-content:space-between; position:relative; z-index:2; }
+  .b-kicker{ font-weight:700; font-size:23px; letter-spacing:.2em; color:var(--amber-deep); }
+  .b-title{ font-weight:900; font-size:120px; line-height:.84; letter-spacing:-.025em; color:var(--ink);
+    text-transform:uppercase; }
+  .b-stage{ flex:1; position:relative; }
+  .b-stage::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:9px; background:var(--amber); z-index:3; }
+
+  /* =========================== C — inset print frame =========================== */
+  .dir-c{ background:var(--cream); }
+  .c-tab{ position:absolute; top:0; left:0; z-index:4; background:var(--amber); color:var(--ink);
+    font-weight:800; letter-spacing:.18em; font-size:22px; padding:14px 28px; }
+  .c-frame{ position:absolute; top:58px; left:66px; right:66px; height:470px; border:6px solid var(--amber);
+    box-shadow:0 16px 38px rgba(43,38,32,.22); overflow:hidden; }
+  .c-foot{ position:absolute; left:66px; right:66px; bottom:0; height:138px; display:flex; align-items:center; gap:24px; }
+  .c-title{ font-weight:900; font-size:78px; line-height:.92; letter-spacing:-.01em; color:var(--ink); text-transform:uppercase; }
+  .c-org{ margin-left:auto; max-width:240px; text-align:right; font-weight:700; font-size:19px; letter-spacing:.2em;
+    line-height:1.35; color:var(--ink); opacity:.55; }
+
+  /* =========================== D — full bleed + scrim =========================== */
+  .d-scrim{ position:absolute; inset:0; background:linear-gradient(to top,
+      rgba(18,15,12,.9) 0%, rgba(18,15,12,.42) 34%, rgba(18,15,12,0) 60%); }
+  .d-top{ position:absolute; top:44px; right:54px; z-index:3; display:flex; align-items:center; gap:14px; color:var(--cream); }
+  .d-top span{ font-weight:800; letter-spacing:.15em; font-size:27px; }
+  .d-title{ position:absolute; left:62px; bottom:98px; z-index:3; max-width:1020px;
+    font-weight:900; font-size:132px; line-height:.84; letter-spacing:-.025em; color:var(--cream); text-transform:uppercase; }
+  .d-rule{ position:absolute; left:66px; bottom:62px; z-index:3; width:128px; height:11px; background:var(--amber); }
+
+  /* =========================== E — masthead bar =========================== */
+  .e-bar{ position:absolute; top:0; left:0; right:0; height:120px; z-index:3; background:var(--amber);
+    display:flex; align-items:center; justify-content:space-between; padding:0 52px; }
+  .e-bar__r{ font-weight:700; font-size:22px; letter-spacing:.2em; color:var(--ink); opacity:.85; }
+  .e-stage{ position:absolute; top:120px; left:0; right:0; bottom:0; }
+  .e-chip{ position:absolute; left:46px; bottom:46px; z-index:3; background:var(--ink); color:var(--cream);
+    font-weight:900; font-size:78px; line-height:1; letter-spacing:-.01em; text-transform:uppercase; padding:16px 32px; }
+
+  /* =========================== F — corner slate card =========================== */
+  .f-vig{ position:absolute; inset:0; background:radial-gradient(130% 110% at 72% 28%,
+      rgba(18,15,12,0) 28%, rgba(18,15,12,.74) 100%); }
+  .f-card{ position:absolute; left:54px; bottom:54px; z-index:3; width:566px; background:var(--cream);
+    padding:38px 44px 32px; box-shadow:0 24px 54px rgba(0,0,0,.42); }
+  .f-card__head{ display:flex; align-items:center; gap:14px; color:var(--ink); }
+  .f-card__head span{ font-weight:800; letter-spacing:.15em; font-size:26px; }
+  .f-title{ margin-top:14px; font-weight:900; font-size:90px; line-height:.9; letter-spacing:-.02em; color:var(--ink);
+    text-transform:uppercase; }
+  .f-card__foot{ margin-top:20px; font-weight:700; font-size:17px; letter-spacing:.15em; color:var(--amber-deep); }
+  .f-punch{ position:absolute; top:30px; right:34px; width:24px; height:24px; border-radius:50%;
+    background:var(--ink); opacity:.14; }
+
+  /* ---------- canvas option scaffolding ---------- */
+  .opt{ display:flex; flex-direction:column; gap:16px; padding:20px; }
+  .opt__desc{ max-width:560px; font-size:14px; line-height:1.5; color:#5b554c; }
+  .opt__desc b{ color:var(--ink); font-weight:700; }
+  .opt__cap{ display:flex; align-items:center; gap:10px; font-size:11px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:#8a8478; }
+  .opt__cap::after{ content:""; flex:1; height:1px; background:#d8d3c8; }
+  .opt__grid{ display:flex; gap:12px; padding:14px; background:#f3f0e8; border:1px solid #e2ddd2; border-radius:6px; }
+
+  /* intro panel */
+  .intro{ padding:30px 34px; max-width:1180px; }
+  .intro h1{ font-size:30px; font-weight:900; letter-spacing:-.02em; color:var(--ink); margin:0 0 6px; }
+  .intro p{ font-size:15px; line-height:1.6; color:#534d44; margin:8px 0; max-width:880px; }
+  .intro .row{ display:flex; gap:26px; flex-wrap:wrap; margin-top:18px; }
+  .intro .tok{ display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--ink); }
+  .intro .sw{ width:26px; height:26px; border-radius:5px; border:1px solid rgba(0,0,0,.12); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="thumbnails.jsx"></script>
+<script type="text/babel">
+const { useState } = React;
+
+// Film placeholders used to demo "channel row" coherence per direction.
+const ROWS = {
+  A:[["THE HAAR","harbour at dawn"],["LANGSIDE","close, summer night"],["DRY DOCK","welder, sparks"]],
+  B:[["SALT LINES","trawler deck, grey sea"],["THE GANTRY","crane over the Clyde"],["BANKTON","field, first light"]],
+  C:[["NORTHERLY","lighthouse, long lens"],["CAIRN","ridge walkers, fog"],["THE FERRY","wheelhouse, rain"]],
+  D:[["THE QUIET TRADE","tenement stair, night"],["BLACKFORD","two figures, dusk"],["LEITH","dock road, neon"]],
+  E:[["CLOSE SEASON","moorland, low cloud"],["THE LET","empty flat, window"],["SEAWALL","storm, spray"]],
+  F:[["FERRYMAN'S REST","ferry wake, dusk"],["OLD TOWN","wynd, lamplight"],["TERMINUS","platform, last train"]],
+};
+const TH = { A:ThumbA, B:ThumbB, C:ThumbC, D:ThumbD, E:ThumbE, F:ThumbF };
+
+function GridRow({ k }){
+  const T = TH[k];
+  return (
+    <div className="opt__grid">
+      {ROWS[k].map(([title,still],i)=>(
+        <Scale key={i} w={176}><T title={title} still={still} /></Scale>
+      ))}
+    </div>
+  );
+}
+
+function Option({ id, k, desc, children }){
+  const T = TH[k];
+  const [t,s] = ROWS[k][0];
+  return (
+    <div className="opt">
+      <Scale w={560}><T /></Scale>
+      <div className="opt__desc">{desc}</div>
+      <div className="opt__cap">Channel row · reads at sidebar size</div>
+      <GridRow k={k} />
+    </div>
+  );
+}
+
+function App(){
+  return (
+    <DesignCanvas>
+      <DCSection id="intro" title="Strange Goose Productions" subtitle="YouTube thumbnail system · 1280×720 · pick a direction to develop">
+        <DCArtboard id="brief" label="Brief & system" width={1180} height={300}>
+          <div className="intro">
+            <h1>Six directions for a repeatable thumbnail</h1>
+            <p>Each template keeps a fixed skeleton — <b>SGP mark</b>, <b>film title in Inter Tight</b>, and one
+              <b> hero still</b> you swap per video — so the channel grid reads as an intentional series, not auto-grabbed frames.
+              The striped panels are <b>drop zones</b> for each film's still. The mark is a goose-in-flight chevron; swap in your real logo art any time.</p>
+            <p>Directions vary on four axes you asked about: <b>title position</b>, <b>how much frame the still takes</b>,
+              <b> whether there's a colour band / frame</b>, and <b>logo placement</b>. Tell me which to take to final.</p>
+            <div className="row">
+              <div className="tok"><span className="sw" style={{background:'#faf6ee'}}></span>Cream · #FAF6EE</div>
+              <div className="tok"><span className="sw" style={{background:'#d98e3a'}}></span>Amber · #D98E3A</div>
+              <div className="tok"><span className="sw" style={{background:'#2b2620'}}></span>Ink · #2B2620</div>
+              <div className="tok" style={{fontStyle:'italic',opacity:.8}}>“Proper film. Built differently.”</div>
+            </div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="dirs" title="Directions" subtitle="Big preview + a 3-up channel row for each">
+        <DCArtboard id="a" label="A · Lower amber band" width={600} height={540}>
+          <Option k="A" desc={<span><b>Amber plate, bottom.</b> Still fills the whole frame; title sits on a solid amber band — maximum contrast and the most legible at tiny sizes. Logo + SGP lock to the top-left corner.</span>} />
+        </DCArtboard>
+        <DCArtboard id="b" label="B · Cream sidebar" width={600} height={540}>
+          <Option k="B" desc={<span><b>Editorial split.</b> Cream panel takes the left third with the title stacked large; still fills the right. Wordmark anchors the panel foot. Calm, magazine-like, very on-brand.</span>} />
+        </DCArtboard>
+        <DCArtboard id="c" label="C · Inset print frame" width={600} height={540}>
+          <Option k="C" desc={<span><b>Handmade / contact-sheet.</b> Still is floated inside a cream margin with an amber keyline and a numbered corner tab. Title and org sit underneath. Most clearly "indie", least screen-filling.</span>} />
+        </DCArtboard>
+        <DCArtboard id="d" label="D · Full bleed + scrim" width={600} height={540}>
+          <Option k="D" desc={<span><b>Cinematic.</b> Still goes edge-to-edge under a dark scrim; oversized title bottom-left with an amber rule. Logo top-right. The boldest, most "film" of the set.</span>} />
+        </DCArtboard>
+        <DCArtboard id="e" label="E · Masthead bar" width={600} height={540}>
+          <Option k="E" desc={<span><b>Series masthead.</b> Amber bar across the top carries the wordmark as a fixed header; title drops onto an ink chip over the still. The header is what makes the grid feel like one channel.</span>} />
+        </DCArtboard>
+        <DCArtboard id="f" label="F · Corner slate card" width={600} height={540}>
+          <Option k="F" desc={<span><b>Luggage-tag lockup.</b> A cream card in the corner holds mark, title and tagline over a vignetted full-bleed still. Warmest and most handmade — carries the tagline on every frame.</span>} />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
