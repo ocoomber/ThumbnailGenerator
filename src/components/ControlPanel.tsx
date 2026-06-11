@@ -182,12 +182,13 @@ export default function ControlPanel({
       </div>
       <div className="field">
         <label htmlFor="metaIn">Caption / right line</label>
-        <input
+        <textarea
           id="metaIn"
-          type="text"
+          rows={2}
           value={content.caption}
           onChange={(e) => onContent({ ...content, caption: e.target.value })}
         />
+        <p className="hint" style={{ margin: '6px 0 0' }}>Press Enter for a second line.</p>
       </div>
 
       <button className="btn amber" onClick={() => fileRef.current?.click()}>

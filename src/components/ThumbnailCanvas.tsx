@@ -97,8 +97,9 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
       fitTitle(tEl, config.title.maxSize * k, config.title.minSize * k);
     }
     const cEl = captionRef.current;
-    if (cEl && cEl.textContent !== content.caption && document.activeElement !== cEl) {
-      cEl.textContent = content.caption;
+    // innerText (not textContent) so manual line breaks round-trip as \n.
+    if (cEl && cEl.innerText.replace(/\n$/, '') !== content.caption && document.activeElement !== cEl) {
+      cEl.innerText = content.caption;
     }
   });
 
@@ -332,12 +333,23 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
               spellCheck={false}
               onInput={
                 editable && onCaptionEdit
-                  ? (e) => onCaptionEdit((e.target as HTMLElement).textContent ?? '')
+                  ? (e) => onCaptionEdit((e.target as HTMLElement).innerText.replace(/\n$/, ''))
+                  : undefined
+              }
+              onKeyDown={
+                editable
+                  ? (e) => {
+                      // Enter inserts a manual line break instead of a new block.
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.execCommand('insertLineBreak');
+                      }
+                    }
                   : undefined
               }
               style={{
                 flex: 'none',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'pre',
                 textAlign: 'right',
                 fontWeight: config.caption.weight,
                 fontSize: config.caption.fontSize * k,

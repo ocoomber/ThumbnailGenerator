@@ -89,12 +89,13 @@ body {
   color: var(--muted); margin-bottom: 7px;
 }
 .field label em { font-style: normal; color: var(--ink); float: right; letter-spacing: 0; }
-.field input[type=text], .field select {
+.field input[type=text], .field select, .field textarea {
   width: 100%; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink);
   background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px;
 }
+.field textarea { resize: none; line-height: 1.4; }
 .field input[type=range] { width: 100%; accent-color: var(--amber); }
-.field input:focus, .field select:focus {
+.field input:focus, .field select:focus, .field textarea:focus {
   outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(217, 142, 58, .18);
 }
 
