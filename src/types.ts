@@ -67,10 +67,21 @@ export interface TemplateConfig {
   };
 }
 
+// How the hero still sits inside a format's frame. x/y are 0–100: which part
+// of the image's overflow is shown (50/50 = centred). zoom ≥ 1.
+export interface HeroFraming {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
 export interface ThumbnailContent {
   title: string;
   caption: string;
   heroImage: string | null;
+  // Per-format reframing of the hero (a 16:9 still crops very differently
+  // into the 4:5 Instagram frame, so each format keeps its own).
+  framing?: Partial<Record<FormatId, HeroFraming>>;
 }
 
 export interface Preset {

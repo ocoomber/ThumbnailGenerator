@@ -1,4 +1,4 @@
-import type { Format, FormatId, TemplateConfig, ThumbnailContent } from './types';
+import type { Format, FormatId, HeroFraming, TemplateConfig, ThumbnailContent } from './types';
 
 export const FORMATS: Record<FormatId, Format> = {
   youtube: { id: 'youtube', label: 'YouTube · 1280×720', width: 1280, height: 720, scale: 1 },
@@ -66,7 +66,10 @@ export const DEFAULT_CONTENT: ThumbnailContent = {
   title: 'THE HAAR',
   caption: 'STRANGE GOOSE · EDINBURGH',
   heroImage: null,
+  framing: {},
 };
+
+export const DEFAULT_FRAMING: HeroFraming = { x: 50, y: 50, zoom: 1 };
 
 // Bundled via @fontsource — always available, even offline.
 export const BUNDLED_FONTS = ['Inter Tight', 'Archivo Black', 'Bebas Neue', 'Oswald'];

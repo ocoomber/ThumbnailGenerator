@@ -41,7 +41,8 @@ export default function App() {
     if (!file.type.startsWith('image/')) return;
     const r = new FileReader();
     r.onload = (e) => {
-      setContent({ ...content, heroImage: e.target?.result as string });
+      // New still — start from a centred frame in every format.
+      setContent({ ...content, heroImage: e.target?.result as string, framing: {} });
       showToast('Hero still updated');
     };
     r.readAsDataURL(file);
@@ -102,12 +103,16 @@ export default function App() {
                 onCaptionEdit={(c) => setContent({ ...content, caption: c })}
                 onHeroClick={() => fileInputProxy.current?.()}
                 onHeroDrop={readHeroFile}
+                onFramingChange={(f) =>
+                  setContent({ ...content, framing: { ...content.framing, [formatId]: f } })
+                }
               />
             </Stage>
             <p className="editnote">
               <b>Tip:</b> click the title or the right-hand caption to type directly on the thumbnail, or use the
-              panel. Click the still (or drag an image onto it) to drop in this film's frame. The same design
-              exports for every platform — just switch format above.
+              panel. Click the still (or drag an image onto it) to drop in this film's frame, then <b>drag the
+              still to reframe it</b> — each format remembers its own framing. The same design exports for
+              every platform — just switch format above.
             </p>
           </div>
 

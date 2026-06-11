@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { Corner, Format, Preset, TemplateConfig, ThumbnailContent } from '../types';
-import { BRAND_SWATCHES, BUNDLED_FONTS, DEFAULT_CONFIG, GOOGLE_FONTS, mergeConfig } from '../defaults';
+import { BRAND_SWATCHES, BUNDLED_FONTS, DEFAULT_CONFIG, DEFAULT_FRAMING, GOOGLE_FONTS, mergeConfig } from '../defaults';
 import { ensureFontLoaded } from '../fonts';
 
 interface Props {
@@ -158,6 +158,9 @@ export default function ControlPanel({
   const setCaption = (p: Partial<TemplateConfig['caption']>) => set({ caption: { ...config.caption, ...p } });
   const setLogo = (p: Partial<TemplateConfig['logo']>) => set({ logo: { ...config.logo, ...p } });
   const setHero = (p: Partial<TemplateConfig['hero']>) => set({ hero: { ...config.hero, ...p } });
+  const framing = content.framing?.[format.id] ?? DEFAULT_FRAMING;
+  const setFraming = (f: typeof framing) =>
+    onContent({ ...content, framing: { ...content.framing, [format.id]: f } });
 
   const savePreset = () => {
     const name = window.prompt('Preset name:', 'My preset');
@@ -213,6 +216,29 @@ export default function ControlPanel({
           e.target.value = '';
         }}
       />
+
+      {content.heroImage && (
+        <div style={{ marginTop: 14 }}>
+          <div className="field">
+            <label>
+              Hero zoom · {format.id === 'youtube' ? 'YouTube' : 'Instagram'} <em>{Math.round(framing.zoom * 100)}%</em>
+            </label>
+            <input
+              type="range"
+              min={100}
+              max={300}
+              value={Math.round(framing.zoom * 100)}
+              onChange={(e) => setFraming({ ...framing, zoom: Number(e.target.value) / 100 })}
+            />
+          </div>
+          <button className="btn" onClick={() => setFraming({ ...DEFAULT_FRAMING })}>
+            Reset framing
+          </button>
+          <p className="hint" style={{ margin: '8px 0 0' }}>
+            Drag the still on the canvas to choose the crop. Framing is saved separately per format.
+          </p>
+        </div>
+      )}
 
       <div className="sep" />
 

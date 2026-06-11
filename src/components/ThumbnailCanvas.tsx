@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import type { Format, TemplateConfig, ThumbnailContent } from '../types';
+import type { Format, HeroFraming, TemplateConfig, ThumbnailContent } from '../types';
+import { DEFAULT_FRAMING } from '../defaults';
 
 interface Props {
   config: TemplateConfig;
@@ -12,6 +13,7 @@ interface Props {
   onCaptionEdit?: (caption: string) => void;
   onHeroClick?: () => void;
   onHeroDrop?: (file: File) => void;
+  onFramingChange?: (f: HeroFraming) => void;
   heroOverlay?: ReactNode;
 }
 
@@ -65,6 +67,7 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
     onCaptionEdit,
     onHeroClick,
     onHeroDrop,
+    onFramingChange,
     heroOverlay,
   },
   ref
@@ -75,6 +78,11 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
   const heroRef = useRef<HTMLDivElement>(null);
   // Bumped when a webfont finishes loading so auto-fit re-measures.
   const [fontEpoch, setFontEpoch] = useState(0);
+  // Natural size of the hero still, needed to lay out the framed crop.
+  const [nat, setNat] = useState<{ src: string; w: number; h: number } | null>(null);
+  const panRef = useRef<{ moved: boolean } | null>(null);
+
+  const framing = content.framing?.[format.id] ?? DEFAULT_FRAMING;
 
   // Template values are authored at 1280px width; scale to this format.
   const k = format.scale;
@@ -121,6 +129,71 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
     background: `linear-gradient(to ${top ? 'bottom' : 'top'}, rgba(18,15,12,.46), rgba(18,15,12,0))`,
   });
 
+  const canFrame =
+    !!content.heroImage &&
+    config.hero.objectFit === 'cover' &&
+    nat !== null &&
+    nat.src === content.heroImage;
+
+  // Cover layout done by hand so the crop window can be panned/zoomed:
+  // scale the still to fill the frame (times zoom), then x/y pick which
+  // part of the overflow is shown (0 = left/top edge, 100 = right/bottom).
+  const framedStyle = (): React.CSSProperties => {
+    if (!canFrame) {
+      return {
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: config.hero.objectFit,
+        display: 'block',
+      };
+    }
+    const s = Math.max(format.width / nat!.w, format.height / nat!.h) * framing.zoom;
+    const w = nat!.w * s;
+    const h = nat!.h * s;
+    return {
+      position: 'absolute',
+      display: 'block',
+      maxWidth: 'none',
+      width: w,
+      height: h,
+      left: -(w - format.width) * (framing.x / 100),
+      top: -(h - format.height) * (framing.y / 100),
+    };
+  };
+
+  const startPan =
+    editable && onFramingChange && canFrame
+      ? (e: React.PointerEvent) => {
+          const rect = heroRef.current!.getBoundingClientRect();
+          const stageScale = rect.width / format.width;
+          const s = Math.max(format.width / nat!.w, format.height / nat!.h) * framing.zoom;
+          const overX = nat!.w * s - format.width;
+          const overY = nat!.h * s - format.height;
+          const start = { x: e.clientX, y: e.clientY, fx: framing.x, fy: framing.y };
+          panRef.current = { moved: false };
+          const move = (ev: PointerEvent) => {
+            if (Math.abs(ev.clientX - start.x) + Math.abs(ev.clientY - start.y) > 3) {
+              panRef.current = { moved: true };
+            }
+            const dx = (ev.clientX - start.x) / stageScale;
+            const dy = (ev.clientY - start.y) / stageScale;
+            onFramingChange({
+              ...framing,
+              x: overX > 1 ? Math.min(100, Math.max(0, start.fx - (dx / overX) * 100)) : framing.x,
+              y: overY > 1 ? Math.min(100, Math.max(0, start.fy - (dy / overY) * 100)) : framing.y,
+            });
+          };
+          const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+          };
+          window.addEventListener('pointermove', move);
+          window.addEventListener('pointerup', up);
+        }
+      : undefined;
+
   // Logo anchor: corner inset plus the user's fine offset (positive = inward).
   const logoVerticalBase = logoTop
     ? bandOnTop && config.band.enabled
@@ -147,8 +220,26 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
       <div
         ref={heroRef}
         className={content.heroImage ? 'hero' : 'hero empty'}
-        style={{ position: 'absolute', inset: 0, overflow: 'hidden', cursor: onHeroClick ? 'pointer' : undefined }}
-        onClick={onHeroClick}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          cursor: startPan ? 'grab' : onHeroClick ? 'pointer' : undefined,
+          touchAction: startPan ? 'none' : undefined,
+        }}
+        onClick={
+          onHeroClick
+            ? () => {
+                // A drag that just ended shouldn't open the file picker.
+                if (panRef.current?.moved) {
+                  panRef.current = null;
+                  return;
+                }
+                onHeroClick();
+              }
+            : undefined
+        }
+        onPointerDown={startPan}
         onDragEnter={
           onHeroDrop
             ? (e) => {
@@ -186,14 +277,12 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
           <img
             src={content.heroImage}
             alt=""
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: config.hero.objectFit,
-              display: 'block',
+            draggable={false}
+            onLoad={(e) => {
+              const img = e.target as HTMLImageElement;
+              setNat({ src: content.heroImage!, w: img.naturalWidth, h: img.naturalHeight });
             }}
+            style={framedStyle()}
           />
         ) : (
           heroOverlay ?? (
