@@ -5,6 +5,8 @@ export type FormatId = 'youtube' | 'instagram';
 export interface Format {
   id: FormatId;
   label: string;
+  // Platform name used in the exported filename ("YouTube", "Instagram").
+  destination: string;
   width: number;
   height: number;
   // Template values are authored at 1280px width; renders multiply by this.

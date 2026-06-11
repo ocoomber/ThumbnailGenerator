@@ -1,9 +1,9 @@
 import type { Format, FormatId, HeroFraming, TemplateConfig, ThumbnailContent } from './types';
 
 export const FORMATS: Record<FormatId, Format> = {
-  youtube: { id: 'youtube', label: 'YouTube · 1280×720', width: 1280, height: 720, scale: 1 },
+  youtube: { id: 'youtube', label: 'YouTube · 1280×720', destination: 'YouTube', width: 1280, height: 720, scale: 1 },
   // Instagram feed post 4:5; the profile grid crops to centered 3:4.
-  instagram: { id: 'instagram', label: 'Instagram · 1080×1350', width: 1080, height: 1350, scale: 1080 / 1280 },
+  instagram: { id: 'instagram', label: 'Instagram · 1080×1350', destination: 'Instagram', width: 1080, height: 1350, scale: 1080 / 1280 },
 };
 
 // Direction A — "Lower amber band" house style.

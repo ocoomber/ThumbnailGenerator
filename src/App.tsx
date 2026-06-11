@@ -52,7 +52,7 @@ export default function App() {
     if (!renderRef.current) return;
     setExporting(true);
     try {
-      const name = await exportPng(renderRef.current, content.title, format.width, format.height);
+      const name = await exportPng(renderRef.current, content.title, format.destination, format.width, format.height);
       showToast(`Exported ${name}`);
     } catch (err) {
       console.error(err);
