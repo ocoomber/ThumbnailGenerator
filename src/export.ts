@@ -11,7 +11,14 @@ export function slugify(title: string) {
 
 export async function exportPng(node: HTMLElement, title: string, width: number, height: number) {
   await document.fonts.ready;
-  const dataUrl = await toPng(node, { width, height, pixelRatio: 1, cacheBust: true });
+  const dataUrl = await toPng(node, {
+    width,
+    height,
+    pixelRatio: 1,
+    cacheBust: true,
+    // Safe-area guides are preview-only chrome — keep them out of the file.
+    filter: (el) => !(el instanceof HTMLElement && el.dataset && 'guide' in el.dataset),
+  });
   const a = document.createElement('a');
   a.download = `sgp-${slugify(title)}-${width}x${height}.png`;
   a.href = dataUrl;

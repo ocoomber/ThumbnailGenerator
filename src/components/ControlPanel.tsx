@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
-import type { Corner, Preset, TemplateConfig, ThumbnailContent } from '../types';
-import { BRAND_SWATCHES, DEFAULT_CONFIG, FONT_OPTIONS } from '../defaults';
+import type { Corner, Format, Preset, TemplateConfig, ThumbnailContent } from '../types';
+import { BRAND_SWATCHES, BUNDLED_FONTS, DEFAULT_CONFIG, GOOGLE_FONTS, mergeConfig } from '../defaults';
+import { ensureFontLoaded } from '../fonts';
 
 interface Props {
   config: TemplateConfig;
   content: ThumbnailContent;
+  format: Format;
   presets: Preset[];
   exporting: boolean;
   onConfig: (c: TemplateConfig) => void;
@@ -83,6 +85,49 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   );
 }
 
+// Load any Google Fonts family by name, e.g. "Rubik Mono One".
+function CustomFontInput({ onApply }: { onApply: (family: string) => void }) {
+  const [name, setName] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'failed'>('idle');
+
+  const apply = async () => {
+    const family = name.trim();
+    if (!family) return;
+    setStatus('loading');
+    const ok = await ensureFontLoaded(family);
+    if (ok) {
+      onApply(family);
+      setStatus('idle');
+      setName('');
+    } else {
+      setStatus('failed');
+    }
+  };
+
+  return (
+    <div className="field">
+      <label>Any Google Font</label>
+      <div className="btnrow" style={{ marginTop: 0 }}>
+        <input
+          type="text"
+          placeholder="e.g. Rubik Mono One"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setStatus('idle');
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && apply()}
+          style={{ flex: 1, minWidth: 0 }}
+        />
+        <button className="btn" style={{ flex: 'none' }} onClick={apply} disabled={status === 'loading'}>
+          {status === 'loading' ? '…' : 'Load'}
+        </button>
+      </div>
+      {status === 'failed' && <p className="hint">Couldn't load that font — check the exact name on fonts.google.com.</p>}
+    </div>
+  );
+}
+
 const CORNERS: { key: Corner; label: string }[] = [
   { key: 'top-left', label: 'TL' },
   { key: 'top-right', label: 'TR' },
@@ -93,6 +138,7 @@ const CORNERS: { key: Corner; label: string }[] = [
 export default function ControlPanel({
   config,
   content,
+  format,
   presets,
   exporting,
   onConfig,
@@ -170,7 +216,7 @@ export default function ControlPanel({
       <div className="sep" />
 
       <button className="btn primary" onClick={onExport} disabled={exporting}>
-        {exporting ? 'Rendering…' : `⬇  Export PNG · ${config.width}×${config.height}`}
+        {exporting ? 'Rendering…' : `⬇  Export PNG · ${format.width}×${format.height}`}
       </button>
       <p className="tip">
         <b>Per video:</b> swap the still, retype the title, export. Template settings below change <b>every</b>{' '}
@@ -195,19 +241,45 @@ export default function ControlPanel({
             value={config.band.edge === 'top'}
             onChange={(v) => setBand({ edge: v ? 'top' : 'bottom' })}
           />
-          <Toggle label="Keyline" value={config.band.topKeyline} onChange={(v) => setBand({ topKeyline: v })} />
+          <Toggle
+            label="Keyline (hairline above band)"
+            value={config.band.topKeyline}
+            onChange={(v) => setBand({ topKeyline: v })}
+          />
+          <p className="hint">The keyline is the subtle dark line separating the still from the band.</p>
 
           <p className="panelhead">Title</p>
           <div className="field">
             <label>Font</label>
-            <select value={config.title.fontFamily} onChange={(e) => setTitle({ fontFamily: e.target.value })}>
-              {FONT_OPTIONS.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
+            <select
+              value={config.title.fontFamily}
+              onChange={(e) => {
+                const family = e.target.value;
+                setTitle({ fontFamily: family });
+                void ensureFontLoaded(family);
+              }}
+            >
+              <optgroup label="Built in (work offline)">
+                {BUNDLED_FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Google Fonts">
+                {GOOGLE_FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+                {!BUNDLED_FONTS.includes(config.title.fontFamily) &&
+                  !GOOGLE_FONTS.includes(config.title.fontFamily) && (
+                    <option value={config.title.fontFamily}>{config.title.fontFamily}</option>
+                  )}
+              </optgroup>
             </select>
           </div>
+          <CustomFontInput onApply={(family) => setTitle({ fontFamily: family })} />
           <Slider label="Max size" value={config.title.maxSize} min={72} max={140} onChange={(v) => setTitle({ maxSize: v })} />
           <ColorControl label="Title colour" value={config.title.color} onChange={(v) => setTitle({ color: v })} />
           <Toggle label="UPPERCASE" value={config.title.uppercase} onChange={(v) => setTitle({ uppercase: v })} />
@@ -246,6 +318,21 @@ export default function ControlPanel({
                   ))}
                 </div>
               </div>
+              <Slider
+                label="Nudge horizontal"
+                value={config.logo.offsetX}
+                min={-40}
+                max={400}
+                onChange={(v) => setLogo({ offsetX: v })}
+              />
+              <Slider
+                label="Nudge vertical"
+                value={config.logo.offsetY}
+                min={-40}
+                max={400}
+                onChange={(v) => setLogo({ offsetY: v })}
+              />
+              <p className="hint">Nudges move the logo inward from the chosen corner (negative = outward).</p>
               <div className="field">
                 <label>Wordmark</label>
                 <input type="text" value={config.logo.wordmark} onChange={(e) => setLogo({ wordmark: e.target.value })} />
@@ -328,7 +415,7 @@ export default function ControlPanel({
                 value=""
                 onChange={(e) => {
                   const p = presets.find((x) => x.name === e.target.value);
-                  if (p) onConfig({ ...DEFAULT_CONFIG, ...p.config });
+                  if (p) onConfig(mergeConfig(p.config));
                 }}
               >
                 <option value="" disabled>

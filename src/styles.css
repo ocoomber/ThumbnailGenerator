@@ -147,15 +147,71 @@ body {
 .segmented button + button { border-left: 1px solid var(--line); }
 .segmented button.active { background: var(--ink); color: var(--cream); }
 
-/* ---------------- series preview ---------------- */
+.hint { font-size: 11.5px; color: var(--muted); line-height: 1.45; margin: -6px 0 14px; }
+
+/* format switcher above the stage */
+.stagehead { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.formatswitch { flex: none; min-width: 360px; }
+.formatswitch button { padding: 10px 14px; font-size: 12.5px; }
+@media (max-width: 980px) { .formatswitch { min-width: 0; flex: 1; } }
+
+/* ---------------- platform context previews ---------------- */
 .series-wrap { margin-top: 46px; }
-.series { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 980px) { .series { grid-template-columns: repeat(2, 1fr); } }
-.scard {
-  background: var(--ink); border-radius: 6px; overflow: hidden;
-  box-shadow: 0 8px 22px -10px rgba(43, 38, 32, .4);
+.seriesnote { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+
+.ctx-thumb { position: relative; overflow: hidden; background: var(--ink); }
+.ctx-duration {
+  position: absolute; right: 6px; bottom: 6px; background: rgba(0, 0, 0, .8); color: #fff;
+  font-size: 11px; font-weight: 600; padding: 2px 5px; border-radius: 4px; letter-spacing: .02em;
 }
-.seriesnote { font-size: 12.5px; color: var(--muted); margin: 12px 0 0; }
+.ctx-avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--ink); flex: none;
+  display: grid; place-items: center;
+}
+.ctx-card-meta { display: flex; gap: 11px; padding: 11px 2px 0; align-items: flex-start; }
+.ctx-card-meta > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ctx-card-meta b {
+  font-size: 14.5px; font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.ctx-card-meta span { font-size: 12.5px; color: var(--muted); }
+
+.ctx-desktop { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 30px; }
+@media (max-width: 980px) { .ctx-desktop { grid-template-columns: 1fr; } }
+
+.ctx-row2 { display: grid; grid-template-columns: 400px 1fr; gap: 34px; align-items: start; }
+.ctx-row2 > div { min-width: 0; }
+@media (max-width: 980px) { .ctx-row2 { grid-template-columns: 1fr; } }
+
+.ctx-phone {
+  max-width: 390px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #fff;
+  box-shadow: 0 8px 22px -10px rgba(43, 38, 32, .35);
+}
+.ctx-phone .ctx-card-meta b { font-size: 13.5px; }
+
+.ctx-sidebar { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
+.ctx-side-row { display: flex; gap: 10px; align-items: flex-start; }
+.ctx-side-row .ctx-thumb { width: 168px; flex: none; }
+.ctx-side-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: 1px; }
+.ctx-side-text b {
+  font-size: 13px; font-weight: 700; line-height: 1.25; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.ctx-side-text span { font-size: 11.5px; color: var(--muted); }
+
+/* Instagram mocks */
+.ctx-ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; max-width: 400px; background: #fff; }
+.ctx-ig-tile { aspect-ratio: 3 / 4; overflow: hidden; position: relative; background: var(--ink); }
+/* the 4:5 render is slightly wider than the 3:4 tile — centre-crop the sides */
+.ctx-ig-crop { width: 106.67%; margin-left: -3.335%; }
+.ctx-ig-post {
+  max-width: 400px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff;
+  box-shadow: 0 8px 22px -10px rgba(43, 38, 32, .35);
+}
+.ctx-ig-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.ctx-ig-head b { font-size: 13px; font-weight: 700; }
+.ctx-ig-head .ctx-avatar { width: 30px; height: 30px; }
+.ctx-ig-actions { padding: 10px 14px 14px; font-size: 18px; color: var(--ink); }
 
 .hidden { display: none !important; }
 .toast {

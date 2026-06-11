@@ -1,5 +1,16 @@
 export type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
+export type FormatId = 'youtube' | 'instagram';
+
+export interface Format {
+  id: FormatId;
+  label: string;
+  width: number;
+  height: number;
+  // Template values are authored at 1280px width; renders multiply by this.
+  scale: number;
+}
+
 export interface TemplateConfig {
   // Canvas
   width: number; // 1280 (export width, fixed for YouTube)
@@ -45,6 +56,8 @@ export interface TemplateConfig {
     imageHeight: number; // px height of custom logo
     scrim: boolean;
     inset: number;
+    offsetX: number; // fine nudge from the corner anchor (positive = inward)
+    offsetY: number;
   };
 
   hero: {

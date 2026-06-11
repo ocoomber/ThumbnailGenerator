@@ -15,13 +15,19 @@ The live site redeploys automatically via GitHub Actions on every push to `main`
 
 ## What it does
 
+- **Two platforms, one design:** switch between YouTube (1280×720) and Instagram feed
+  post (1080×1350, with a 3:4 profile-grid crop guide). The same template and content
+  render for both — upload one hero frame, export on-brand thumbnails for each.
 - **Per-video content:** film title, caption, and a hero still (upload, drag-and-drop,
   or click the canvas). Title and caption are also editable directly on the thumbnail.
 - **Template settings** (apply to *every* thumbnail, kept separate from per-video content):
-  band colour/height/edge, title font/size/case/colour, caption, logo corner/wordmark/
-  colour/custom image upload, and an optional hero tint. Save and load named presets.
-- **Channel grid preview** to check the series reads consistently at small size.
-- **Export** a 1280×720 PNG, named `sgp-<title>-1280x720.png`.
+  band colour/height/edge/keyline, title font/size/case/colour, caption, logo
+  corner + fine x/y position, wordmark, custom logo image upload, and an optional hero
+  tint. Save and load named presets. Fonts: four bundled families that work offline,
+  a curated Google Fonts list, or any Google Font by name.
+- **Platform previews** show how the thumbnail *reads* in real placements: YouTube
+  desktop feed, mobile feed, and sidebar suggestions; Instagram profile grid and feed post.
+- **Export** a pixel-exact PNG at the active format's size, named `sgp-<title>-<w>x<h>.png`.
 
 ## Run it locally
 

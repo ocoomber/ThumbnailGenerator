@@ -1,11 +1,13 @@
-import { forwardRef, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
-import type { TemplateConfig, ThumbnailContent } from '../types';
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import type { Format, TemplateConfig, ThumbnailContent } from '../types';
 
 interface Props {
   config: TemplateConfig;
   content: ThumbnailContent;
-  // Editable title/caption (live preview only — grid cards and export are static)
+  format: Format;
+  // Editable title/caption (live preview only — context previews and export are static)
   editable?: boolean;
+  showGuide?: boolean; // platform safe-area guide (excluded from export)
   onTitleEdit?: (title: string) => void;
   onCaptionEdit?: (caption: string) => void;
   onHeroClick?: () => void;
@@ -32,7 +34,7 @@ function fitTitle(el: HTMLElement, maxPx: number, minPx: number) {
   if (el.scrollWidth > avail) {
     el.style.whiteSpace = 'normal';
     el.style.lineHeight = '.86';
-    size = Math.min(size, 64);
+    size = Math.min(size, maxPx * 0.57);
     el.style.fontSize = size + 'px';
   } else {
     el.style.lineHeight = '.88';
@@ -53,54 +55,87 @@ const GooseMark = ({ color, height }: { color: string; height: number }) => (
 );
 
 const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanvas(
-  { config, content, editable, onTitleEdit, onCaptionEdit, onHeroClick, onHeroDrop, heroOverlay },
+  {
+    config,
+    content,
+    format,
+    editable,
+    showGuide,
+    onTitleEdit,
+    onCaptionEdit,
+    onHeroClick,
+    onHeroDrop,
+    heroOverlay,
+  },
   ref
 ) {
   const titleRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
   const dragDepth = useRef(0);
   const heroRef = useRef<HTMLDivElement>(null);
+  // Bumped when a webfont finishes loading so auto-fit re-measures.
+  const [fontEpoch, setFontEpoch] = useState(0);
 
+  // Template values are authored at 1280px width; scale to this format.
+  const k = format.scale;
   const title = displayTitle(config, content.title);
   const bandOnTop = config.band.edge === 'top';
+  const bandHeight = config.band.height * k;
   const logoTop = config.logo.corner.startsWith('top');
   const logoLeft = config.logo.corner.endsWith('left');
 
+  // Sync contenteditable text + run auto-fit on every render. The text sync
+  // must live here (not in a value-keyed effect): when the band or caption is
+  // toggled off and back on, the node remounts empty without the value
+  // changing, so a deps-based effect would never refill it.
   useLayoutEffect(() => {
-    if (titleRef.current) fitTitle(titleRef.current, config.title.maxSize, config.title.minSize);
+    const tEl = titleRef.current;
+    if (tEl) {
+      if (tEl.textContent !== title && document.activeElement !== tEl) {
+        tEl.textContent = title;
+      }
+      fitTitle(tEl, config.title.maxSize * k, config.title.minSize * k);
+    }
+    const cEl = captionRef.current;
+    if (cEl && cEl.textContent !== content.caption && document.activeElement !== cEl) {
+      cEl.textContent = content.caption;
+    }
   });
 
-  // Keep contenteditable text in sync when state changes externally (panel input)
+  // Re-fit when webfonts finish loading (metrics change after swap).
   useEffect(() => {
-    if (editable && titleRef.current && titleRef.current.textContent !== title) {
-      titleRef.current.textContent = title;
-      fitTitle(titleRef.current, config.title.maxSize, config.title.minSize);
-    }
-  }, [editable, title, config.title.maxSize, config.title.minSize]);
-
-  useEffect(() => {
-    if (editable && captionRef.current && captionRef.current.textContent !== content.caption) {
-      captionRef.current.textContent = content.caption;
-    }
-  }, [editable, content.caption]);
+    const onDone = () => setFontEpoch((e) => e + 1);
+    document.fonts.addEventListener('loadingdone', onDone);
+    return () => document.fonts.removeEventListener('loadingdone', onDone);
+  }, []);
+  void fontEpoch; // consumed by triggering the layout effect above
 
   const scrimStyle = (top: boolean): React.CSSProperties => ({
     position: 'absolute',
     left: 0,
     right: 0,
     [top ? 'top' : 'bottom']: 0,
-    height: 230,
+    height: 230 * k,
     pointerEvents: 'none',
     background: `linear-gradient(to ${top ? 'bottom' : 'top'}, rgba(18,15,12,.46), rgba(18,15,12,0))`,
   });
+
+  // Logo anchor: corner inset plus the user's fine offset (positive = inward).
+  const logoVerticalBase = logoTop
+    ? bandOnTop && config.band.enabled
+      ? bandHeight
+      : 0
+    : !bandOnTop && config.band.enabled
+      ? bandHeight
+      : 0;
 
   return (
     <div
       ref={ref}
       className="thumb"
       style={{
-        width: config.width,
-        height: config.height,
+        width: format.width,
+        height: format.height,
         position: 'relative',
         overflow: 'hidden',
         background: config.canvasBg,
@@ -163,7 +198,7 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
           heroOverlay ?? (
             <div className="ph">
               <div className="ico" />
-              <span>Drop hero still here · 16:9</span>
+              <span style={{ fontSize: 20 * k }}>Drop hero still here</span>
             </div>
           )
         )}
@@ -188,21 +223,24 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
         <div
           style={{
             position: 'absolute',
-            [logoTop ? 'top' : 'bottom']: logoTop
-              ? config.logo.inset - 4
-              : (bandOnTop ? 0 : config.band.enabled ? config.band.height : 0) + config.logo.inset - 4,
-            [logoLeft ? 'left' : 'right']: config.logo.inset + 4,
+            [logoTop ? 'top' : 'bottom']:
+              logoVerticalBase + (config.logo.inset - 4 + config.logo.offsetY) * k,
+            [logoLeft ? 'left' : 'right']: (config.logo.inset + 4 + config.logo.offsetX) * k,
             zIndex: 3,
             display: 'flex',
             alignItems: 'center',
-            gap: 14,
+            gap: 14 * k,
             filter: 'drop-shadow(0 2px 10px rgba(0,0,0,.5))',
           }}
         >
           {config.logo.image ? (
-            <img src={config.logo.image} alt="" style={{ height: config.logo.imageHeight, display: 'block' }} />
+            <img
+              src={config.logo.image}
+              alt=""
+              style={{ height: config.logo.imageHeight * k, display: 'block' }}
+            />
           ) : (
-            <GooseMark color={config.logo.color} height={(config.logo.wordmarkSize * 23) / 32} />
+            <GooseMark color={config.logo.color} height={(config.logo.wordmarkSize * 23 * k) / 32} />
           )}
           {config.logo.wordmark && (
             <span
@@ -210,7 +248,7 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
                 color: config.logo.color,
                 fontWeight: 800,
                 letterSpacing: '.16em',
-                fontSize: config.logo.wordmarkSize,
+                fontSize: config.logo.wordmarkSize * k,
               }}
             >
               {config.logo.wordmark}
@@ -227,13 +265,13 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
             left: 0,
             right: 0,
             [bandOnTop ? 'top' : 'bottom']: 0,
-            height: config.band.height,
+            height: bandHeight,
             background: config.band.color,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: `0 ${config.band.paddingX - 2}px 0 ${config.band.paddingX + 2}px`,
-            gap: 28,
+            padding: `0 ${(config.band.paddingX - 2) * k}px 0 ${(config.band.paddingX + 2) * k}px`,
+            gap: 28 * k,
             zIndex: 2,
           }}
         >
@@ -243,8 +281,8 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                [bandOnTop ? 'bottom' : 'top']: -6,
-                height: 6,
+                [bandOnTop ? 'bottom' : 'top']: -6 * k,
+                height: 6 * k,
                 background: '#2b2620',
                 opacity: 0.18,
               }}
@@ -302,7 +340,7 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
                 whiteSpace: 'nowrap',
                 textAlign: 'right',
                 fontWeight: config.caption.weight,
-                fontSize: config.caption.fontSize,
+                fontSize: config.caption.fontSize * k,
                 letterSpacing: `${config.caption.letterSpacing}em`,
                 color: config.caption.color,
                 opacity: config.caption.opacity,
@@ -313,6 +351,48 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
               {editable ? null : content.caption}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Instagram profile-grid crop guide (preview only — filtered from export) */}
+      {showGuide && format.id === 'instagram' && (
+        <div data-guide style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+          {(() => {
+            // Grid tiles are centered 3:4 crops of the 4:5 post.
+            const safeW = format.height * (3 / 4);
+            const side = (format.width - safeW) / 2;
+            const edge: React.CSSProperties = {
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              width: side,
+              background: 'rgba(18,15,12,.45)',
+            };
+            return (
+              <>
+                <div style={{ ...edge, left: 0, borderRight: '2px dashed rgba(250,246,238,.8)' }} />
+                <div style={{ ...edge, right: 0, borderLeft: '2px dashed rgba(250,246,238,.8)' }} />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 18,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    fontSize: 22,
+                    fontWeight: 700,
+                    letterSpacing: '.12em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(250,246,238,.9)',
+                    background: 'rgba(18,15,12,.55)',
+                    padding: '6px 14px',
+                    borderRadius: 999,
+                  }}
+                >
+                  Profile grid crop · 3:4
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
