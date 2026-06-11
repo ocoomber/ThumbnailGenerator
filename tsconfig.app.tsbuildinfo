@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/defaults.ts","./src/export.ts","./src/main.tsx","./src/types.ts","./src/components/ChannelGrid.tsx","./src/components/ControlPanel.tsx","./src/components/Header.tsx","./src/components/Stage.tsx","./src/components/ThumbnailCanvas.tsx","./src/hooks/useLocalStorage.ts"],"version":"5.9.3"}
