@@ -68,13 +68,6 @@ export const DEFAULT_CONTENT: ThumbnailContent = {
   heroImage: null,
 };
 
-// Fixed samples for the channel-grid cohesion check.
-export const GRID_SAMPLES: { title: string; heroColor: string }[] = [
-  { title: 'SALT LINES', heroColor: '#7f8a86' },
-  { title: 'NORTHERLY', heroColor: '#9a9484' },
-  { title: 'THE QUIET TRADE', heroColor: '#6d6a62' },
-];
-
 // Bundled via @fontsource — always available, even offline.
 export const BUNDLED_FONTS = ['Inter Tight', 'Archivo Black', 'Bebas Neue', 'Oswald'];
 

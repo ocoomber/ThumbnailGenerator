@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import type { Format, TemplateConfig, ThumbnailContent } from '../types';
-import { GRID_SAMPLES } from '../defaults';
 import ThumbnailCanvas from './ThumbnailCanvas';
 import Stage from './Stage';
 
@@ -9,16 +8,6 @@ interface Props {
   content: ThumbnailContent;
   format: Format;
 }
-
-const sampleContent = (i: number): ThumbnailContent => ({
-  title: GRID_SAMPLES[i].title,
-  caption: 'STRANGE GOOSE · EDINBURGH',
-  heroImage: null,
-});
-
-const sampleHero = (i: number) => (
-  <div style={{ position: 'absolute', inset: 0, background: GRID_SAMPLES[i].heroColor }} />
-);
 
 function Thumb({
   config,
@@ -54,10 +43,9 @@ const Avatar = () => (
 );
 
 function YouTubePreviews({ config, content, format }: Props) {
+  const liveContent = { ...content, title: content.title || 'UNTITLED' };
   const cards: { content: ThumbnailContent; hero?: ReactNode; meta: string; dur: string }[] = [
-    { content: { ...content, title: content.title || 'UNTITLED' }, meta: '12K views · 2 days ago', dur: '12:42' },
-    { content: sampleContent(0), hero: sampleHero(0), meta: '8.4K views · 3 weeks ago', dur: '9:18' },
-    { content: sampleContent(1), hero: sampleHero(1), meta: '15K views · 1 month ago', dur: '17:05' },
+    { content: liveContent, meta: '12K views · 2 days ago', dur: '12:42' },
   ];
 
   return (
@@ -114,10 +102,9 @@ function YouTubePreviews({ config, content, format }: Props) {
 }
 
 function InstagramPreviews({ config, content, format }: Props) {
+  const liveContent = { ...content, title: content.title || 'UNTITLED' };
   const tiles = [
-    { content: { ...content, title: content.title || 'UNTITLED' }, hero: undefined as ReactNode },
-    { content: sampleContent(0), hero: sampleHero(0) },
-    { content: sampleContent(1), hero: sampleHero(1) },
+    { content: liveContent, hero: undefined as ReactNode },
   ];
 
   return (
@@ -161,8 +148,7 @@ export default function ContextPreviews(props: Props) {
       </p>
       {props.format.id === 'youtube' ? <YouTubePreviews {...props} /> : <InstagramPreviews {...props} />}
       <p className="seriesnote">
-        The first card mirrors your live edit; the others are fixed samples so you can judge how the series
-        holds together at real placement sizes.
+        Mirrors your live edit at real placement sizes.
       </p>
     </div>
   );
