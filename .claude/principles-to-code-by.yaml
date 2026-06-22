@@ -7,9 +7,13 @@
 #           owner runs /ship-check to say "I think this is finished."
 #
 # HOW TO INSTALL IN A NEW PROJECT
-#   1. Copy the whole .claude/ folder into the new project.
-#   2. In that project's CLAUDE.md add one line:  @import .claude/principles-to-code-by.yaml
-#      (or just paste this file's contents in). That makes it load every session.
+#   1. Copy the whole .claude/ folder into the new project's root.
+#   2. Add this line as the FIRST line of the project's ROOT CLAUDE.md
+#      (the file at the project root, e.g. ./CLAUDE.md — NOT a CLAUDE.md
+#      inside .claude/, which Claude Code will not load automatically):
+#         @import .claude/principles-to-code-by.yaml
+#      If the project has no root CLAUDE.md yet, copy
+#      .claude/root-claude-md-snippet.md to ./CLAUDE.md to create one.
 #   Acronyms (URL, CSS, ARIA, WCAG, JSON, LLM) are written plainly here; they are
 #   standard web terms, defined once is enough.
 
