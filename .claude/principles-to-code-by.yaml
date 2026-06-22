@@ -12,8 +12,8 @@
 #      (the file at the project root, e.g. ./CLAUDE.md — NOT a CLAUDE.md
 #      inside .claude/, which Claude Code will not load automatically):
 #         @import .claude/principles-to-code-by.yaml
-#      If the project has no root CLAUDE.md yet, copy
-#      .claude/root-claude-md-snippet.md to ./CLAUDE.md to create one.
+#      If the project has no root CLAUDE.md yet, create ./CLAUDE.md with
+#      that line as its first line.
 #   Acronyms (URL, CSS, ARIA, WCAG, JSON, LLM) are written plainly here; they are
 #   standard web terms, defined once is enough.
 
