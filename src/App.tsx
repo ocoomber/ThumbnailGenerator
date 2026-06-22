@@ -69,13 +69,15 @@ export default function App() {
         <div className="grid2">
           <div>
             <div className="stagehead">
-              <div className="segmented formatswitch">
+              <div className="segmented formatswitch" role="group" aria-label="Format">
                 {Object.values(FORMATS).map((f) => (
                   <button
                     key={f.id}
                     type="button"
                     className={formatId === f.id ? 'active' : ''}
+                    aria-pressed={formatId === f.id}
                     onClick={() => setFormatId(f.id)}
+                    data-agent-target={`select-format-${f.id}`}
                   >
                     {f.label}
                   </button>

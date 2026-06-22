@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Format, TemplateConfig, ThumbnailContent } from '../types';
 import ThumbnailCanvas from './ThumbnailCanvas';
 import Stage from './Stage';
+import GooseMark from './GooseMark';
 
 interface Props {
   config: TemplateConfig;
@@ -29,16 +30,7 @@ function Thumb({
 
 const Avatar = () => (
   <span className="ctx-avatar">
-    <svg viewBox="0 0 100 46" width="18" height="9" aria-hidden="true">
-      <path
-        d="M4 40 Q30 8 50 26 Q70 8 96 40"
-        fill="none"
-        stroke="#faf6ee"
-        strokeWidth="9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <GooseMark width={18} height={9} color="#faf6ee" strokeWidth={9} />
   </span>
 );
 

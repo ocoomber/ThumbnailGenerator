@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import type { Format, HeroFraming, TemplateConfig, ThumbnailContent } from '../types';
 import { DEFAULT_FRAMING } from '../defaults';
+import GooseMark from './GooseMark';
 
 interface Props {
   config: TemplateConfig;
@@ -42,19 +43,6 @@ function fitTitle(el: HTMLElement, maxPx: number, minPx: number) {
     el.style.lineHeight = '.88';
   }
 }
-
-const GooseMark = ({ color, height }: { color: string; height: number }) => (
-  <svg viewBox="0 0 100 46" width={(height * 100) / 46} height={height} aria-hidden="true">
-    <path
-      d="M4 40 Q30 8 50 26 Q70 8 96 40"
-      fill="none"
-      stroke={color}
-      strokeWidth="7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanvas(
   {
@@ -330,7 +318,11 @@ const ThumbnailCanvas = forwardRef<HTMLDivElement, Props>(function ThumbnailCanv
               style={{ height: config.logo.imageHeight * k, display: 'block' }}
             />
           ) : (
-            <GooseMark color={config.logo.color} height={(config.logo.wordmarkSize * 23 * k) / 32} />
+            <GooseMark
+              color={config.logo.color}
+              height={(config.logo.wordmarkSize * 23 * k) / 32}
+              width={((config.logo.wordmarkSize * 23 * k) / 32) * (100 / 46)}
+            />
           )}
           {config.logo.wordmark && (
             <span
