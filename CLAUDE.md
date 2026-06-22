@@ -1,3 +1,5 @@
+@import .claude/principles-to-code-by.yaml
+
 # ThumbnailGenerator — developer handover
 
 SGP YouTube / Instagram thumbnail generator for Strange Goose Productions.
